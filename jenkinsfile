@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE = "shamashaik19/devops-assignment"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo "git process started"
+                git url: "https://github.com/shamashaik19/DevOpsAssignment.git"
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $IMAGE:$BUILD_NUMBER .'
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh 'echo $PASS | docker login -u $USER --password-stdin'
+                    sh 'docker push $IMAGE:$BUILD_NUMBER'
+                    sh 'docker tag $IMAGE:$BUILD_NUMBER $IMAGE:latest'
+                    sh 'docker push $IMAGE:latest'
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                withKubeConfig(credentialsId: 'kubeconfig-creds') {
+                    sh 'kubectl apply -f k8s/'
+                    sh 'kubectl rollout status deployment/devops-demo'
+                }
+            }
+        }
+    }
+}
+
