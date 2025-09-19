@@ -17,4 +17,15 @@ spec:
         image: shamashaik19/devops-assignment:latest
         ports:
         - containerPort: 5000
-
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-demo-svc
+spec:
+  type: LoadBalancer
+  selector:
+    app: devops-demo
+  ports:
+    - port: 80
+      targetPort: 5000
