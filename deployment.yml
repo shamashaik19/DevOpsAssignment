@@ -28,5 +28,5 @@ spec:
     app: devops-demo
   ports:
     - port: 80
-      targetPort: 5000
+      targetPort: 30080
       nodePort: 30080   
